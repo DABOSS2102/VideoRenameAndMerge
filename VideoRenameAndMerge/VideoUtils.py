@@ -2,17 +2,18 @@ import ffmpeg
 import time
 import os
 
-def rename_single_mp4_file(file_path, filename, new_base_name, idx, log_emit):
+def rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, log_emit):
     old_file = os.path.join(file_path, filename)
     if os.path.isfile(old_file):
-        base_name = f"{new_base_name}{idx}"
+        idx_str = str(idx).zfill(pad_length)
+        base_name = f"{new_base_name}_{idx_str}"
         ext = ".mp4"
         new_filename = base_name + ext
         new_file = os.path.join(file_path, new_filename)
         suffix = 1
-        new_filename = f"{new_base_name}{idx}.mp4"
         while os.path.exists(new_file):
-            new_filename = f"{base_name}_{suffix}{ext}"
+            suffix_str = str(suffix).zfill(pad_length)
+            new_filename = f"{base_name}_{suffix_str}{ext}"
             new_file = os.path.join(file_path, new_filename)
             suffix += 1
         os.rename(old_file, new_file)
@@ -22,8 +23,9 @@ def rename_single_mp4_file(file_path, filename, new_base_name, idx, log_emit):
 
 def rename_mp4_files(file_path, files, new_base_name, log_emit):
     renamed_files = []
+    pad_length = len(str(len(files)))
     for idx, filename in enumerate(files, start=1):
-        new_file = rename_single_mp4_file(file_path, filename, new_base_name, idx, log_emit)
+        new_file = rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, log_emit)
         if new_file:
             renamed_files.append(new_file)
     return renamed_files

@@ -31,7 +31,8 @@ class VideoWorker(QThread):
             self.progress.emit(10)
 
             step_start = time.time()
-            renamed_files = self.rename_mp4_files(file_path, files, base_name, self.log.emit)
+            pad_length = len(str(total_files))
+            renamed_files = VideoUtils.rename_mp4_files(file_path, files, base_name, pad_length, self.log.emit)
             self.log.emit(f"Step 2 (Renaming files) took {time.time() - step_start:.2f} seconds.")
 
             self.log.emit("preprocessing videos...")
