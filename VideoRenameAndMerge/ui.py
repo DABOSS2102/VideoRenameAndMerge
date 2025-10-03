@@ -43,7 +43,7 @@ class MainWindow(QWidget):
         folder = QFileDialog.getExistingDirectory(self, "Select Video Folder")
         if folder:
             self.folder_path = folder
-            self.label.setText(f"Selected: {folder}")
+            self.label_2.setText(f"Selected: {folder}")
             self.start_btn.setEnabled(True)
 
     def start_process(self):
@@ -51,6 +51,7 @@ class MainWindow(QWidget):
         base_name = self.txt_box_1.text()
         self.worker = VideoWorker(self.folder_path, base_name)
         self.worker.log.connect(self.append_log)
+        self.worker.progress.connect(self.update_progress)
         self.worker.start()
         self.start_btn.setEnabled(False)
         self.worker.finished.connect(lambda: self.start_btn.setEnabled(True))

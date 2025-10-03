@@ -4,6 +4,7 @@ import os, ffmpeg, time
 
 class VideoWorker(QThread):
     log = pyqtSignal(str)
+    progress = pyqtSignal(int)
 
     def __init__(self, file_path, base_name):
         super().__init__()
@@ -30,9 +31,13 @@ class VideoWorker(QThread):
 
             self.progress.emit(10)
 
+             # Create renamed_videos directory
+            renamed_dir = os.path.join(file_path, "renamed_videos")
+            os.makedirs(renamed_dir, exist_ok=True)
+
             step_start = time.time()
             pad_length = len(str(total_files))
-            renamed_files = VideoUtils.rename_mp4_files(file_path, files, base_name, pad_length, self.log.emit)
+            renamed_files = VideoUtils.rename_mp4_files(file_path, files, base_name, pad_length, self.log.emit, output_dir=renamed_dir)
             self.log.emit(f"Step 2 (Renaming files) took {time.time() - step_start:.2f} seconds.")
 
             self.log.emit("preprocessing videos...")
@@ -46,7 +51,9 @@ class VideoWorker(QThread):
 
             if preprocessed_files:
                 self.progress.emit(70)
-                output_path, inputs_txt_path = VideoUtils.concatenate_videos(preprocessed_files, file_path, self.log.emit)
+                youtube_dir = os.path.join(file_path, "youtube_video")
+                os.makedirs(youtube_dir, exist_ok=True)
+                output_path, inputs_txt_path = VideoUtils.concatenate_videos(preprocessed_files, youtube_dir, self.log.emit)
                 self.progress.emit(85)
                 VideoUtils.cleanup_files(preprocessed_files, inputs_txt_path, self.log.emit)
                 self.progress.emit(100)

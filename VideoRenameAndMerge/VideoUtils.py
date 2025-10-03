@@ -21,7 +21,7 @@ def rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, 
         return new_file
     return None
 
-def rename_mp4_files(file_path, files, new_base_name, log_emit):
+def rename_mp4_files(file_path, files, new_base_name, pad_length, log_emit):
     renamed_files = []
     pad_length = len(str(len(files)))
     for idx, filename in enumerate(files, start=1):
@@ -78,7 +78,7 @@ def concatenate_videos(preprocessed_files, file_path, log_emit):
         str: Path to the concatenated output video.
         str: Path to the temporary inputs.txt file.
     """
-    output_path = os.path.join(file_path, "youtubeVideo.mp4")
+    output_path = os.path.join(file_path, "10022025HammerPractice.mp4")
     log_emit("Concatenating videos using ffmpeg-python...")
 
     step_start = time.time()
