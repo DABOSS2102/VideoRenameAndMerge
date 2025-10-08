@@ -2,30 +2,33 @@ import ffmpeg
 import time
 import os
 
-def rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, log_emit):
+def rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, log_emit, target_dir=None):
+    filename = validate_file_name(filename)
     old_file = os.path.join(file_path, filename)
     if os.path.isfile(old_file):
         idx_str = str(idx).zfill(pad_length)
         base_name = f"{new_base_name}_{idx_str}"
         ext = ".mp4"
         new_filename = base_name + ext
-        new_file = os.path.join(file_path, new_filename)
+        dest_dir = target_dir if target_dir else file_path
+        new_file = os.path.join(dest_dir, new_filename)
         suffix = 1
         while os.path.exists(new_file):
             suffix_str = str(suffix).zfill(pad_length)
             new_filename = f"{base_name}_{suffix_str}{ext}"
-            new_file = os.path.join(file_path, new_filename)
+            new_file = os.path.join(dest_dir, new_filename)
             suffix += 1
         os.rename(old_file, new_file)
         log_emit(f"Renamed '{filename}' to '{new_filename}'")
         return new_file
     return None
 
-def rename_mp4_files(file_path, files, new_base_name, pad_length, log_emit):
+def rename_mp4_files(file_path, files, new_base_name, pad_length, log_emit, target_dir=None):
     renamed_files = []
     pad_length = len(str(len(files)))
+    new_base_name = validate_file_name(new_base_name)
     for idx, filename in enumerate(files, start=1):
-        new_file = rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, log_emit)
+        new_file = rename_single_mp4_file(file_path, filename, new_base_name, idx, pad_length, log_emit, target_dir)
         if new_file:
             renamed_files.append(new_file)
     return renamed_files
@@ -66,7 +69,7 @@ def preprocess_file_list(file_list, log_callback):
     log_callback(f"Step 3 (Preprocessing videos) took {time.time() - step_start:.2f} seconds.")
     return preprocessed_files
 
-def concatenate_videos(preprocessed_files, file_path, log_emit):
+def concatenate_videos(preprocessed_files, file_path, concatenated_name, log_emit):
     """
     Concatenates preprocessed video files into a single output video.
 
@@ -78,7 +81,8 @@ def concatenate_videos(preprocessed_files, file_path, log_emit):
         str: Path to the concatenated output video.
         str: Path to the temporary inputs.txt file.
     """
-    output_path = os.path.join(file_path, "10022025HammerPractice.mp4")
+    concatenated_name = validate_file_name(concatenated_name)
+    output_path = os.path.join(file_path, f"{concatenated_name}.mp4")
     log_emit("Concatenating videos using ffmpeg-python...")
 
     step_start = time.time()
@@ -118,3 +122,19 @@ def cleanup_files(preprocessed_files, inputs_txt_path, log_emit):
     except Exception as e:
         log_emit(f"Could not remove {inputs_txt_path}: {e}")
     log_emit(f"Step 5 (Cleanup) took {time.time() - step_start:.2f} seconds.")
+
+def validate_file_name(name):
+    """
+    Validates the provided file name to ensure it does not contain invalid characters.
+    It will adjust the file name to be compatible with most file systems.
+    Args:
+        name (str): The file name to validate.
+    Returns:
+        string: valid file name
+    """
+    invalid_chars = set(r'<>:"/\|?*')
+    if any(char in invalid_chars for char in name):
+        nameOut = ''.join(c if c not in invalid_chars else '_' for c in name)
+    else:
+        nameOut = name
+    return nameOut
