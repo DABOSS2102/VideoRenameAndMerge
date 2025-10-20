@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="UI.py" />
+    <Compile Include="UserPreferences.py" />
     <Compile Include="VideoRenameAndMerge.py" />
     <Compile Include="VideoUtils.py" />
     <Compile Include="Worker.py" />
